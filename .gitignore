@@ -1,0 +1,76 @@
+/media
+
+# Python bytecode:
+*.py[co]
+
+# Packaging files:
+*.egg*
+
+# Sphinx docs:
+build
+
+# SQLite3 database files:
+*.db
+
+# Logs:
+*.log
+
+# Linux Editors
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+.elc
+auto-save-list
+tramp
+.\#*
+*.swp
+*.swo
+
+# Mac
+.DS_Store
+._*
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Dev tools and config files
+.idea
+.vagrant
+.vscode
+.editorconfig
+.ftpconfig
+.ftpignore
+.jshintignore
+.lintignore
+project.cson
+.env
+.project
+
+# Ignore local configurations
+config/settings/user.py
+config/settings/local.py
+db.sqlite3
+
+# Node modules
+node_modules/
+*node_modules/
+
+#sass cache
+*sass-cache/
+
+# PostgreSQL Backups
+db_backup/
+
+# Coverage/Tests
+htmlcov/
+.coverage
+django-queries-results.html
+.pytest-queries
+
+# other files
+db.json
+/static
+/venv
+/uninstall*
