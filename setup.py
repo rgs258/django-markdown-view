@@ -17,6 +17,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'django>2,<4.0',
+        'markdown>=3.2,<3.3',
     ],
     tests_require=[
         'tox',
