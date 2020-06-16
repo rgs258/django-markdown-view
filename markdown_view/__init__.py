@@ -6,6 +6,8 @@ SETTINGS_TYPES = {
     "MARKDOWN_VIEW_EXTENSIONS": list,
     "MARKDOWN_VIEW_BASE_DIR": str,
     "MARKDOWN_VIEW_TEMPLATE": str,
+    "MARKDOWN_VIEW_USE_REQUEST_CONTEXT": bool,
+    "MARKDOWN_VIEW_EXTRA_CONTEXT": dict
 }
 
 # Validate settings types.
