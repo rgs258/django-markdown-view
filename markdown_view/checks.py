@@ -4,7 +4,7 @@ from django.core import checks
 def markdown_view_check(app_configs, **kwargs):
     errors = []
 
-    if not False:
+    if False:
         errors.extend([checks.Error(
             "Example of a check error",
             hint="Example of a check error hint",

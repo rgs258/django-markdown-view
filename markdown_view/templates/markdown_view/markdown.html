@@ -1,0 +1,22 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.2/styles/a11y-light.min.css" integrity="sha256-RrOG8PVkp6JCgJdMUQKbMevN6kuxTOvHJ09rC7snlXQ=" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.2/highlight.min.js" integrity="sha256-xBWd+VDTBasaTja2bfaCX4aA2H18UxRsjRFkK3rgfkI=" crossorigin="anonymous"></script>
+
+{% comment %}{{ page_title|safe }}{% endcomment %}
+
+<section>
+	<h3>Table of Contents</h3>
+	{{ markdown_toc }}
+</section>
+
+<section>
+	{{ markdown_content }}
+</section>
+
+<script>
+	hljs.initHighlightingOnLoad();
+	$(document).ready(function(){
+		$('.md-content div.toc ul').attr("class", "cta-links");
+		$('.md-content div.toc ul li a').attr("class", "default-fa");
+		$('.md-content table').attr("class", "table table-bordered table-hover table-striped table-mobile tablesorter tablesorter-default");
+	});
+</script>

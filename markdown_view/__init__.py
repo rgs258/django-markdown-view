@@ -1,8 +1,6 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-from markdown_view import views
-
 SETTINGS_TYPES = {
     "MARKDOWN_VIEW_LOADERS": list,
     "MARKDOWN_VIEW_EXTENSIONS": list,
@@ -20,7 +18,3 @@ for variable, instance_type in SETTINGS_TYPES.items():
         )
 
 default_app_config = "markdown_view.apps.MarkdownViewConfig"
-
-MarkdownView = views.MarkdownView
-LoggedInMarkdownView = views.LoggedInMarkdownView
-StaffMarkdownView = views.StaffMarkdownView

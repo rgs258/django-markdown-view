@@ -8,7 +8,7 @@ from django.utils.safestring import mark_safe
 from django.views.generic import TemplateView
 from markdown_view.constants import (
     DEFAULT_MARKDOWN_VIEW_LOADERS,
-    DEFAULT_MARKDOWN_VIEW_EXTENSIONS,
+    DEFAULT_MARKDOWN_VIEW_EXTENSIONS, DEFAULT_MARKDOWN_VIEW_TEMPLATE,
 )
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,11 @@ class MarkdownView(TemplateView):
             })
         return context
 
-    template_name = "wrds/markdown.html"
+    template_name = getattr(
+        settings,
+        "MARKDOWN_VIEW_TEMPLATE",
+        DEFAULT_MARKDOWN_VIEW_TEMPLATE
+    )
 
 
 class LoggedInMarkdownView(LoginRequiredMixin, MarkdownView):
