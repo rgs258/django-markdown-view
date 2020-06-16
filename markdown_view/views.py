@@ -6,6 +6,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.template import Engine
 from django.utils.safestring import mark_safe
 from django.views.generic import TemplateView
+from markdown_view.constants import (
+    DEFAULT_MARKDOWN_VIEW_LOADERS,
+    DEFAULT_MARKDOWN_VIEW_EXTENSIONS,
+)
 
 logger = logging.getLogger(__name__)
 
