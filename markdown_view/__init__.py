@@ -4,7 +4,8 @@ from django.core.exceptions import ImproperlyConfigured
 SETTINGS_TYPES = {
     "MARKDOWN_VIEW_LOADERS": list,
     "MARKDOWN_VIEW_EXTENSIONS": list,
-    "MARKDOWN_VIEW_BASE_DIR": str
+    "MARKDOWN_VIEW_BASE_DIR": str,
+    "MARKDOWN_VIEW_TEMPLATE": str,
 }
 
 # Validate settings types.
