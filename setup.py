@@ -7,7 +7,7 @@ long_desc = open('README.rst', 'rb').read().decode('utf-8') + '\n\n' + \
 
 setup(
     name='django-markdown-view',
-    version='0.0.1',
+    version='0.0.2',
     description='Serve .md pages as Django templates.',
     long_description=long_desc,
     author='Ryan J. Sullivan',
@@ -16,7 +16,7 @@ setup(
     url='http://github.com/rgs258/django-markdown-view',
     packages=find_packages(),
     install_requires=[
-        'django>2,<4.0',
+        'django>=2.2,<4.0',
         'markdown>=3.2,<3.3',
     ],
     tests_require=[
@@ -28,8 +28,6 @@ setup(
         'Development Status :: 2 - Pre-Alpha',
         'Framework :: Django :: 3.0',
         'Framework :: Django :: 2.2',
-        'Framework :: Django :: 2.1',
-        'Framework :: Django :: 2.0',
         'Framework :: Django',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
