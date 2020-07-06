@@ -7,13 +7,15 @@ Django Markdown View
     :depth: 5
 
 .. note::
-    * Tested with section describes aspirational goals.
+    * The Tested With section describes aspirational goals.
     * Really, all directions describe aspirational goals.
 
 Requirements
 ------------
 
 Tested with:
+
+**The Tested With section describes aspirational goals.**
 
 * Python: 3.5, 3.6, 3.7, 3.8
 * Django: 2.0, 2.1, 2.2, 3.0
