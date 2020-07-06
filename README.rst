@@ -18,7 +18,7 @@ Tested with:
 **The Tested With section describes aspirational goals.**
 
 * Python: 3.5, 3.6, 3.7, 3.8
-* Django: 2.0, 2.1, 2.2, 3.0
+* Django: 2.2, 3.0
 
 
 .. note::
@@ -55,7 +55,7 @@ Usage
 -----
 
 Views
-~~~~~~
+~~~~~
 
 Use one of ``MarkdownView``,  ``LoggedInMarkdownView``, or ``StaffMarkdownView``
 to serve a .md file
