@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.0.3 (2020-07-08)
+------------------
+#. Correct a typo the README.rst
+#. Add settings to the README.rst
+
 0.0.2 (2020-07-06)
 ------------------
 #. Remove support for Django pre-2.2
