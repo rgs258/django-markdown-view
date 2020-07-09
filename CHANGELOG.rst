@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.0.4 (2020-07-09)
+------------------
+#. Some documentation that didn't make it into 0.0.3
+
 0.0.3 (2020-07-09)
 ------------------
 #. Correct a typo the README.rst
