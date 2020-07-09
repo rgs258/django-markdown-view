@@ -1,6 +1,13 @@
 Django Markdown View
 ====================
 
+.. image:: https://travis-ci.org/rgs258/django-markdown-view.svg?branch=master
+    :target: https://travis-ci.org/rgs258/django-markdown-view
+
+.. image:: https://coveralls.io/repos/github/rgs258/django-markdown-view/badge.svg?branch=master
+    :target: https://coveralls.io/github/rgs258/django-markdown-view?branch=master
+
+
 **Serve .md pages as Django views.**
 
 This package aims to make it easy to serve .md files on Django sites.
@@ -10,7 +17,7 @@ This package aims to make it easy to serve .md files on Django sites.
     :depth: 5
 
 .. note::
-    * This package needs tests, and to have Travis properly configured.
+    * This package needs tests, and to have Travis and Coveralls properly configured.
 
 Requirements
 ------------
@@ -182,3 +189,18 @@ At a high level, `MarkdownView` will:
    `{{% load static %}}`, into several context variables
 
 #. Serve the `MARKDOWN_VIEW_TEMPLATE` with the context variables
+
+
+Contributing
+------------
+
+All contributions are very welcomed. Propositions, problems, bugs, and
+enhancement are tracked with `GitHub issues`_ and patches are submitted
+via `pull requests`_.
+
+We use `Travis`_ coupled with `Coveralls`_ as continious integration tools.
+
+.. _`GitHub issues`: https://github.com/rgs258/django-markdown-view/issues
+.. _`pull requests`: https://github.com/rgs258/django-markdown-view/pulls
+.. _Travis: https://travis-ci.org/github/rgs258/django-markdown-view
+.. _Coveralls: https://coveralls.io/github/rgs258/django-markdown-view
