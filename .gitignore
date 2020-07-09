@@ -74,3 +74,4 @@ db.json
 /static
 /venv
 /uninstall*
+/dist
