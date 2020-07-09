@@ -1,10 +1,14 @@
 Changelog
 =========
 
-0.0.3 (2020-07-08)
+0.0.3 (2020-07-09)
 ------------------
 #. Correct a typo the README.rst
-#. Add settings to the README.rst
+#. Add ids to the sections in the template
+#. Make more settings configurable
+#. Provide settings to disable optional functionality
+#. Add settings to, and generally improve, the README.rst
+#. Changed the project description to say "views" instead of "templates"
 
 0.0.2 (2020-07-06)
 ------------------

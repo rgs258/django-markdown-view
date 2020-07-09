@@ -1,14 +1,16 @@
 Django Markdown View
 ====================
 
-**Serve .md pages as Django templates.**
+**Serve .md pages as Django views.**
+
+This package aims to make it easy to serve .md files on Django sites.
+
 
 .. contents:: Contents
     :depth: 5
 
 .. note::
-    * The Tested With section describes aspirational goals.
-    * Really, all directions describe aspirational goals.
+    * This package needs tests, and to have Travis properly configured.
 
 Requirements
 ------------
@@ -45,7 +47,9 @@ Installation
         ]
 
 #. (OPTIONAL) Add ``MARKDOWN_VIEW_BASE_DIR`` or ``BASE_DIR`` to settings
-    The dictionary of the application's base. For example:
+    The dictionary of the application's base. See Settings_ below
+
+    For example, if settings are in config/settings/base.py, then:
 
     .. code-block:: python
 
@@ -72,49 +76,109 @@ from ``markdown_view.views`` to serve a .md file
 
 Settings
 ~~~~~~~~
-All settings are optional. See **markdown_view/constants.py** for the defaults.
+All settings are optional. See `<markdown_view/constants.py>`_ for the defaults.
 
 * `MARKDOWN_VIEW_BASE_DIR` and `BASE_DIR`
 
-    When present, the location to append to the list of dirs that Django's
-    `django.template.utils.get_app_template_dirs` will return. Looks for
-    `BASE_DIR` if `MARKDOWN_VIEW_BASE_DIR` is not found. This is used to
-    allow .md files in the root of the project to be located.
+    When present, the value is taken as a location to append to the list of dirs that
+    Django's `django.template.utils.get_app_template_dirs` will return when passed
+    `dirname=""`. This is used to locate .md files in the root of the project, e.g.,
+    a README.md file. Looks for `BASE_DIR` if `MARKDOWN_VIEW_BASE_DIR` is not found.
 
 * `MARKDOWN_VIEW_LOADERS`
 
-    The loader that finds .md files in the context of any installed app or
-    one of `MARKDOWN_VIEW_BASE_DIR` or `BASE_DIR`.
+    A list of loaders that locate .md files. The default list includes only
+    `markdown_view.loaders.MarkdownLoader` which will by default try to load .md files
+    from root directories in INSTALLED_APPS packages much the same as Django's
+    `django.template.loaders.app_directories.Loader` looks to load from "templates".
 
-* `DEFAULT_MARKDOWN_VIEW_EXTENSIONS`
+* `MARKDOWN_VIEW_LOADER_TEMPLATES_DIR`
 
-    The extensions to enable. See https://python-markdown.github.io/extensions/ and
+    The name of the directories in INSTALLED_APPS packages in which to locate .md
+    files. Defaults to "" in order to locate .md filed in the root directories.
+
+* `MARKDOWN_VIEW_EXTENSIONS`
+
+    The extensions to enable. These extensions are enabled be default:
+
+    * `toc`:
+        generates a Table of Contents. If `toc` is removed from extensions, then
+        `MARKDOWN_VIEW_TEMPLATE_USE_TOC` must be set to False.
+
+    * `tables`:
+        enables tables.
+
+    * `fenced_code`:
+        enables code blocks. If `fenced_code` is removed from extensions, then
+        `MARKDOWN_VIEW_TEMPLATE_USE_HIGHLIGHT_JS`, which provides the highlighting for
+        code blocks, can be disabled.
+
+    * `markdown_view.markdown_extensions.ImageExtension`:
+        makes images responsive in bootstrap4.
+
+    See https://python-markdown.github.io/extensions/ and
     https://github.com/Python-Markdown/markdown/wiki/Third-Party-Extensions for more
-    extensions. Note that `markdown_view.markdown_extensions.ImageExtension` is enabled
-    and makes images responsive in bootstrap4. You can add you own extensions by
-    following https://github.com/Python-Markdown/markdown/wiki/Tutorial-1---Writing-Extensions-for-Python-Markdown
+    extensions.
 
-* `DEFAULT_MARKDOWN_VIEW_TEMPLATE`
+    You can create your own extensions by following
+    https://github.com/Python-Markdown/markdown/wiki/Tutorial-1---Writing-Extensions-for-Python-Markdown
+
+* `MARKDOWN_VIEW_TEMPLATE`
 
     The Django template that'll be used to render the HTML that is generated from the
     Markdown. Set your own template to style your pages. Context includes:
 
-    * `markdown_content`: The HTML produced from the Markdown
-    * `markdown_toc`: A table of contents from the headers of the Markdown
-    * `page_title`: A guess at a page title, for now it's the first row of the TOC
+    * `markdown_content`:
+        The HTML produced from the Markdown.
+
+    * `use_highlight_js`:
+        If highlight.js is enabled.
+
+    * `use_toc`:
+        If the table of contents should be rendered.
+
+    * `markdown_toc`:
+        A table of contents from the headers of the Markdown. Not set when `use_toc`
+        is False.
+
+    * `page_title`:
+        A guess at a page title, for now it's the first row of the TOC. Not set when
+        `use_toc` is False.
+
+* `MARKDOWN_VIEW_TEMPLATE_USE_TOC`
+
+    Whether to render the TOC. If false, in the template context, `use_toc` is False
+    and `markdown_toc` and `page_title` are not present.
+
+* `MARKDOWN_VIEW_TEMPLATE_USE_HIGHLIGHT_JS`
+
+    Whether to load and activate the highlight.js library in the template.
 
 Experimental Settings
 ~~~~~~~~~~~~~~~~~~~~~
 
-* `DEFAULT_MARKDOWN_VIEW_USE_REQUEST_CONTEXT`
+* `MARKDOWN_VIEW_USE_REQUEST_CONTEXT`
 
     If the request context should be used as a base when creating the context with
     which to render the Markdown internally. This is because the Markdown is rendered
     once first in order to prepend it with `{% load static %}`.
     This is not well tested; YMMV.
 
-* `DEFAULT_MARKDOWN_VIEW_EXTRA_CONTEXT`
+* `MARKDOWN_VIEW_EXTRA_CONTEXT`
 
     Any extra context to send to the internal render of the Markdown. Can be used
     to expose context to template tags embedded in the Markdown.
     This is not well tested; YMMV.
+
+
+Implementation
+--------------
+
+At a high level, `MarkdownView` will:
+
+#. Use a template loader to locate .md given as `file_name`
+
+#. Render as a template, the contents of the .md file prepended with
+   `{{% load static %}}`, into several context variables
+
+#. Serve the `MARKDOWN_VIEW_TEMPLATE` with the context variables

@@ -1,22 +1,28 @@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.2/styles/a11y-light.min.css" integrity="sha256-RrOG8PVkp6JCgJdMUQKbMevN6kuxTOvHJ09rC7snlXQ=" crossorigin="anonymous" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.2/highlight.min.js" integrity="sha256-xBWd+VDTBasaTja2bfaCX4aA2H18UxRsjRFkK3rgfkI=" crossorigin="anonymous"></script>
+{% if use_highlight_js %}
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/a11y-light.min.css" integrity="sha512-PW96n2amVglidqEDLPUdjJ0zByhT20poSqWJYZRutR6CP2QH58k96WmorqNnC4QXnosNeqMJM8FR/93isIifDQ==" crossorigin="anonymous" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha512-lnOllyZZlRk/gQIyjS3+h+LUy54uyM4aGq2zbGc82KTvBlp/fodSpdh/pywPztpU9zUqHcJr+jP+a1zLa9oCJw==" crossorigin="anonymous"></script>
+{% endif %}
 
 {% comment %}{{ page_title|safe }}{% endcomment %}
 
-<section>
-	<h3>Table of Contents</h3>
-	{{ markdown_toc }}
-</section>
+{% if use_toc %}
+    <section id="markdown_view_toc">
+        <h3>Table of Contents</h3>
+        {{ markdown_toc }}
+    </section>
+{% endif %}
 
-<section>
+<section id="markdown_view_content">
 	{{ markdown_content }}
 </section>
 
-<script>
-	hljs.initHighlightingOnLoad();
-	$(document).ready(function(){
-		$('.md-content div.toc ul').attr("class", "cta-links");
-		$('.md-content div.toc ul li a').attr("class", "default-fa");
-		$('.md-content table').attr("class", "table table-bordered table-hover table-striped table-mobile tablesorter tablesorter-default");
-	});
-</script>
+{% if use_highlight_js %}
+    <script>
+        hljs.initHighlightingOnLoad();
+        $(document).ready(function(){
+            $('.md-content div.toc ul').attr("class", "cta-links");
+            $('.md-content div.toc ul li a').attr("class", "default-fa");
+            $('.md-content table').attr("class", "table table-bordered table-hover table-striped table-mobile tablesorter tablesorter-default");
+        });
+    </script>
+{% endif %}

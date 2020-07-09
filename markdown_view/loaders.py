@@ -5,6 +5,8 @@ from django.template.loaders.filesystem import Loader as FilesystemLoader
 from django.template.utils import get_app_template_dirs
 from django.utils._os import safe_join
 
+from markdown_view.constants import DEFAULT_MARKDOWN_VIEW_LOADER_TEMPLATES_DIR
+
 
 class MarkdownLoader(FilesystemLoader):
     """
@@ -21,7 +23,13 @@ class MarkdownLoader(FilesystemLoader):
                 "BASE_DIR",
                 None)
         )
-        dirs = [*get_app_template_dirs('')]
+        dirs = [*get_app_template_dirs(
+            getattr(
+                settings,
+                "MARKDOWN_VIEW_LOADER_TEMPLATES_DIR",
+                DEFAULT_MARKDOWN_VIEW_LOADER_TEMPLATES_DIR
+            )
+        )]
         if base_dir:
             dirs.extend([base_dir])
         return dirs

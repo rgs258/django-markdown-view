@@ -8,7 +8,7 @@ long_desc = open('README.rst', 'rb').read().decode('utf-8') + '\n\n' + \
 setup(
     name='django-markdown-view',
     version='0.0.3',
-    description='Serve .md pages as Django templates.',
+    description='Serve .md pages as Django views.',
     long_description=long_desc,
     author='Ryan J. Sullivan',
     author_email='ryanj@ryanjsullivan.com',
