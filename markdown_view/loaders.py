@@ -46,7 +46,7 @@ class MarkdownLoader(FilesystemLoader):
             template_app_dir = template_split.pop()
             template_split.reverse()
             for template_dir in self.get_dirs():
-                if template_dir.endswith(template_app_dir):
+                if str(template_dir).endswith(template_app_dir):
                     try:
                         name = safe_join(template_dir, *template_split)
                     except SuspiciousFileOperation:
