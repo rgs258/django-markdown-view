@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.0.5 (2022-03-30)
+------------------
+#. Remove upper bounds for `pip` and Django 4.0 support.
+
 0.0.4 (2020-07-09)
 ------------------
 #. Some documentation that didn't make it into 0.0.3
