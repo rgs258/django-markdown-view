@@ -1,10 +1,10 @@
 Authors
 =======
 
-Wharton Computing
------------------
-* `Ryan J. Sullivan <https://github.com/rgs256/>`_
-* `Timothy Allen <https://github.com/flipperpa/>`_
+The Wharton School
+------------------
+* `Ryan J. Sullivan <https://github.com/rgs258/>`_
+* `Timothy Allen <https://github.com/FlipperPA/>`_
 
 Other
 -----
