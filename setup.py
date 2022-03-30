@@ -7,7 +7,7 @@ long_desc = open('README.rst', 'rb').read().decode('utf-8') + '\n\n' + \
 
 setup(
     name='django-markdown-view',
-    version='0.0.4',
+    version='0.0.5',
     description='Serve .md pages as Django views.',
     long_description=long_desc,
     author='Ryan J. Sullivan',
@@ -16,8 +16,8 @@ setup(
     url='http://github.com/rgs258/django-markdown-view',
     packages=find_packages(),
     install_requires=[
-        'django>=2.2,<4.0',
-        'markdown>=3.2,<3.3',
+        'django>=2.2',
+        'markdown>=3.2',
     ],
     tests_require=[
         'tox',
@@ -25,9 +25,10 @@ setup(
     keywords=['django', 'markdown', 'markdown view', 'md'],
     include_package_data=True,
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
-        'Framework :: Django :: 3.0',
-        'Framework :: Django :: 2.2',
+        'Development Status :: 3 - Alpha',
+        'Framework :: Django :: 2',
+        'Framework :: Django :: 3',
+        'Framework :: Django :: 4',
         'Framework :: Django',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
@@ -35,10 +36,10 @@ setup(
         'Programming Language :: Python',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
     zip_safe=False,
 )
