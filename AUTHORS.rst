@@ -8,4 +8,4 @@ The Wharton School
 
 Other
 -----
-* `JanKruska <https://github.com/JanKruska>`_
+* `Jan Kruska <https://github.com/JanKruska>`_
