@@ -1,13 +1,10 @@
 from setuptools import setup, find_packages
 
 
-long_desc = open('README.rst', 'rb').read().decode('utf-8') + '\n\n' + \
-            open('AUTHORS.rst', 'rb').read().decode('utf-8') + '\n\n' + \
-            open('CHANGELOG.rst', 'rb').read().decode('utf-8')
+long_desc = open('README.rst', 'rb').read().decode('utf-8')
 
 setup(
     name='django-markdown-view',
-    version='0.0.5',
     description='Serve .md pages as Django views.',
     long_description=long_desc,
     author='Ryan J. Sullivan',
@@ -24,6 +21,8 @@ setup(
     ],
     keywords=['django', 'markdown', 'markdown view', 'md'],
     include_package_data=True,
+    setup_requires=["setuptools_scm"],
+    use_scm_version=True,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Framework :: Django :: 2',
