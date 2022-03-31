@@ -19,25 +19,6 @@ This package aims to make it easy to serve .md files on Django sites.
 .. note::
     * This package needs tests, and to have Travis and Coveralls properly configured.
 
-Requirements
-------------
-
-Tested with:
-
-**The Tested With section describes aspirational goals.**
-
-* Python: 3.5, 3.6, 3.7, 3.8
-* Django: 2.2, 3.0
-
-
-.. note::
-    * Django 2.2 requires SQLite 3.8.3
-    * Django 2.2 supports Python 3.5, 3.6, and 3.7.
-    * Django 3.0 supports Python 3.6, 3.7 and 3.8.
-
-    We highly recommend and only officially support the latest release of each series.
-
-
 Installation
 ------------
 
@@ -80,9 +61,9 @@ from ``markdown_view.views`` to serve a .md file
         StaffMarkdownView.as_view(file_name='my_app/README.md'),
         name="readme"),
 
-
 Settings
 ~~~~~~~~
+
 All settings are optional. See `<markdown_view/constants.py>`_ for the defaults.
 
 * `MARKDOWN_VIEW_BASE_DIR` and `BASE_DIR`
@@ -190,6 +171,11 @@ At a high level, `MarkdownView` will:
 
 #. Serve the `MARKDOWN_VIEW_TEMPLATE` with the context variables
 
+Release Notes and Contributors
+------------------------------
+
+* `Release notes <https://github.com/rgs258/django-markdown-view/releases>`_
+* `Our wonderful contributors <https://github.com/rgs258/django-markdown-view/graphs/contributors>`_
 
 Contributing
 ------------
@@ -204,3 +190,15 @@ We use `Travis`_ coupled with `Coveralls`_ as continious integration tools.
 .. _`pull requests`: https://github.com/rgs258/django-markdown-view/pulls
 .. _Travis: https://travis-ci.org/github/rgs258/django-markdown-view
 .. _Coveralls: https://coveralls.io/github/rgs258/django-markdown-view
+
+Requirements
+------------
+
+We aspire to support the currently supported versions of Django.
+
+**The Tested With section describes aspirational goals.**
+
+Tested with:
+
+* Python: 3.6, 3.7, 3.8, 3.9, 3.10
+* Django: 2.2, 3.2, 4.0
