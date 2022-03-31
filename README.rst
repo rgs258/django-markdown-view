@@ -164,10 +164,10 @@ Implementation
 
 At a high level, `MarkdownView` will:
 
-#. Use a template loader to locate .md given as `file_name`
+#. Use a template loader to locate `.md` given as `file_name`
 
-#. Render as a template, the contents of the .md file prepended with
-   `{{% load static %}}`, into several context variables
+#. Render as a template, the contents of the `.md` file prepended with
+   `{% load static %}`, into several context variables
 
 #. Serve the `MARKDOWN_VIEW_TEMPLATE` with the context variables
 
