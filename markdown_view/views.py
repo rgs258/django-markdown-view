@@ -65,11 +65,14 @@ class MarkdownView(TemplateView):
                     "MARKDOWN_VIEW_TEMPLATE_USE_TOC",
                     DEFAULT_MARKDOWN_VIEW_TEMPLATE_USE_TOC
             ):
-                context.update({
+                toc_context = {
                     "markdown_toc": mark_safe(md.toc),
-                    "page_title": mark_safe(md.toc_tokens[0]['name']),
                     "use_toc": True,
-                })
+                }
+                toc_tokens = getattr(md, "toc_tokens", []) or []
+                if toc_tokens and "name" in toc_tokens[0]:
+                    toc_context["page_title"] = mark_safe(toc_tokens[0]["name"])
+                context.update(toc_context)
 
         return context
 
