@@ -142,6 +142,26 @@ All settings are optional. See `<markdown_view/constants.py>`_ for the defaults.
 
     Whether to load and activate the highlight.js library in the template.
 
+* `MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS`
+
+    Defaults to `True`. Markdown source files commonly link to other `.md`
+    files using plain, filesystem-relative links (e.g.
+    ``[See also](../README-cron.md)``), exactly as they'd resolve on GitHub
+    or in a local editor. Since a rendered page is served at its *view's*
+    URL rather than at the source file's location on disk, such a link
+    would otherwise 404 in the browser.
+
+    When enabled, `MarkdownView` looks up whether any URL pattern in the
+    project serves the linked `.md` file via a `MarkdownView` (or
+    subclass), and if so, rewrites the link to that view's actual URL
+    instead of leaving the raw relative file path in place. See
+    `markdown_view/registry.py <markdown_view/registry.py>`_ for the
+    resolution logic. This is best-effort: links to files that aren't
+    routed anywhere, or whose route is behind a required URL argument, are
+    left exactly as Markdown would otherwise have rendered them -- nothing
+    breaks if a linked file simply isn't routed. Set to `False` to disable
+    this rewriting entirely.
+
 Experimental Settings
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -166,7 +186,13 @@ At a high level, `MarkdownView` will:
 
 #. Use a template loader to locate `.md` given as `file_name`
 
-#. Render as a template, the contents of the `.md` file prepended with
+#. Convert the Markdown to HTML
+
+#. If `MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS` is enabled, rewrite any
+   relative links to other `.md` files that resolve to a file served by a
+   registered `MarkdownView` route, to that route's actual URL
+
+#. Render as a template, the resulting HTML prepended with
    `{% load static %}`, into several context variables
 
 #. Serve the `MARKDOWN_VIEW_TEMPLATE` with the context variables
