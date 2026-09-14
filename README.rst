@@ -1,8 +1,8 @@
 Django Markdown View
 ====================
 
-.. image:: https://travis-ci.org/rgs258/django-markdown-view.svg?branch=master
-    :target: https://travis-ci.org/rgs258/django-markdown-view
+.. image:: https://github.com/rgs258/django-markdown-view/actions/workflows/test.yml/badge.svg
+    :target: https://github.com/rgs258/django-markdown-view/actions/workflows/test.yml
 
 .. image:: https://coveralls.io/repos/github/rgs258/django-markdown-view/badge.svg?branch=master
     :target: https://coveralls.io/github/rgs258/django-markdown-view?branch=master
@@ -15,9 +15,6 @@ This package aims to make it easy to serve .md files on Django sites.
 
 .. contents:: Contents
     :depth: 5
-
-.. note::
-    * This package needs tests, and to have Travis and Coveralls properly configured.
 
 Installation
 ------------
@@ -210,11 +207,11 @@ All contributions are very welcomed. Propositions, problems, bugs, and
 enhancement are tracked with `GitHub issues`_ and patches are submitted
 via `pull requests`_.
 
-We use `Travis`_ coupled with `Coveralls`_ as continious integration tools.
+We use `GitHub Actions`_ coupled with `Coveralls`_ as continuous integration tools.
 
 .. _`GitHub issues`: https://github.com/rgs258/django-markdown-view/issues
 .. _`pull requests`: https://github.com/rgs258/django-markdown-view/pulls
-.. _Travis: https://travis-ci.org/github/rgs258/django-markdown-view
+.. _`GitHub Actions`: https://github.com/rgs258/django-markdown-view/actions
 .. _Coveralls: https://coveralls.io/github/rgs258/django-markdown-view
 
 Requirements
@@ -226,5 +223,5 @@ We aspire to support the currently supported versions of Django.
 
 Tested with:
 
-* Python: 3.6, 3.7, 3.8, 3.9, 3.10
-* Django: 2.2, 3.2, 4.0
+* Python: 3.9, 3.10, 3.11, 3.12
+* Django: 4.2, 5.0, 5.1
