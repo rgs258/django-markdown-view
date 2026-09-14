@@ -96,12 +96,20 @@ def _iter_markdown_view_routes(resolver, namespace_parts=()):
 
     for pattern in resolver.url_patterns:
         if isinstance(pattern, URLResolver):
+            # A nested `include()` -- recurse into it, extending the
+            # namespace path if this include() was itself namespaced.
             child_namespace = namespace_parts
             if pattern.namespace:
                 child_namespace = namespace_parts + (pattern.namespace,)
             yield from _iter_markdown_view_routes(pattern, child_namespace)
             continue
 
+        # Leaf pattern (an actual URL, not a nested urlconf). Only
+        # `as_view()`-based class-based views expose `view_class`/
+        # `view_initkwargs` on their callback -- function views and
+        # views wrapped by decorators that don't forward these
+        # attributes will simply have `view_class=None` and get skipped
+        # below.
         callback = getattr(pattern, "callback", None)
         view_class = getattr(callback, "view_class", None)
         if not (isinstance(view_class, type) and issubclass(view_class, MarkdownView)):
@@ -112,6 +120,9 @@ def _iter_markdown_view_routes(resolver, namespace_parts=()):
             # No `file_name`, or an unnamed route we can't `reverse()`.
             continue
 
+        # Build the fully-qualified name (e.g. "users:support:readme")
+        # needed to `reverse()` this route later, since `pattern.name`
+        # alone is only unique within its own urlconf.
         full_name = ":".join((*namespace_parts, pattern.name))
         yield file_name, full_name
 
@@ -132,6 +143,10 @@ def build_markdown_view_url_registry(resolver=None):
 
     registry = {}
     for file_name, full_name in _iter_markdown_view_routes(resolver):
+        # Map the route to the file it serves by resolving `file_name`
+        # (e.g. "users/README.md") through the same loader MarkdownView
+        # itself uses, so the key here matches the `source_path` that
+        # `rewrite_markdown_links()` will later look up against it.
         source_path = resolve_markdown_source_path(file_name)
         if source_path is None:
             logger.debug(
@@ -141,6 +156,9 @@ def build_markdown_view_url_registry(resolver=None):
             )
             continue
         try:
+            # Routes behind a required URL argument (e.g.
+            # "<int:pk>/readme/") can't be reversed without knowing that
+            # argument's value, so they're simply not linkable targets.
             url = reverse(full_name)
         except NoReverseMatch:
             logger.debug(
@@ -163,6 +181,11 @@ def get_markdown_view_url_registry(force_refresh=False):
         that serves it.
     """
     resolver = get_resolver()
+    # `get_resolver()` is itself cached per-urlconf by Django, so keying
+    # on its identity means this registry naturally rebuilds if the
+    # active urlconf ever changes (e.g. `ROOT_URLCONF` swapped via
+    # `override_settings` in tests) without needing to track that
+    # explicitly.
     cache_key = id(resolver)
     if force_refresh or cache_key not in _registry_cache:
         _registry_cache[cache_key] = build_markdown_view_url_registry(resolver)
@@ -174,6 +197,11 @@ def clear_markdown_view_url_registry_cache():
     _registry_cache.clear()
 
 
+# Matches an `<a href="...">` opening tag, capturing the text before the
+# href value (group 1), the href value itself (group 2), and the closing
+# quote (group 3), so `_replace()` below can substitute just the middle
+# group back into the original tag without disturbing anything else on
+# the `<a>` tag (other attributes, casing, etc.).
 _HREF_RE = re.compile(r'(<a\b[^>]*\bhref=")([^"]*)(")', re.IGNORECASE)
 
 
@@ -199,19 +227,35 @@ def rewrite_markdown_links(html, source_path, registry=None):
     """
     if registry is None:
         registry = get_markdown_view_url_registry()
+    # Relative links in the source `.md` file are resolved the same way a
+    # browser or file manager would: relative to the directory the *source
+    # file* lives in, not relative to the URL the rendered page happens to
+    # be served at.
     source_dir = os.path.dirname(source_path)
 
     def _replace(match):
         prefix, href, suffix = match.groups()
+        # Split off any `#fragment` before checking/resolving the path
+        # portion, then reattach it to whatever href we end up with.
         target, _, fragment = href.partition("#")
         if not target or "://" in target or target.startswith(("/", "mailto:")):
+            # Already absolute (has a scheme, is site-root-relative, or is
+            # a mailto: link) -- nothing for us to resolve, leave as-is.
             return match.group(0)
         if not target.lower().endswith(".md"):
+            # Not a link to another markdown source file (e.g. an image,
+            # a `.txt` file, an in-page anchor) -- leave as-is.
             return match.group(0)
 
+        # Resolve the relative path exactly as the browser would if this
+        # were a raw file link, then see if some route serves that exact
+        # file.
         resolved_path = os.path.normpath(os.path.join(source_dir, target))
         url = registry.get(resolved_path)
         if url is None:
+            # Points at a real .md file, but nothing routes it -- leave
+            # the link exactly as Markdown would otherwise have rendered
+            # it, rather than producing a broken URL of our own.
             logger.debug(
                 "markdown_view: no registered route for linked file %r "
                 "(resolved from %r while rendering %r).",
