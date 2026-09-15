@@ -128,7 +128,8 @@ All settings are optional. See `<markdown_view/constants.py>`_ for the defaults.
 
     * `page_title`:
         A guess at a page title, for now it's the first row of the TOC. Not set when
-        `use_toc` is False.
+        `use_toc` is False, or when the Markdown has no headers for the TOC to be
+        built from.
 
 * `MARKDOWN_VIEW_TEMPLATE_USE_TOC`
 

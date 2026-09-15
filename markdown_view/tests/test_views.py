@@ -53,6 +53,18 @@ class MarkdownViewRenderingTests(TestCase):
         self.assertNotIn("markdown_toc", context)
         self.assertNotIn("page_title", context)
 
+    def test_headerless_document_renders_without_page_title(self):
+        # Regression test: rendering Markdown with no headers used to raise
+        # an `IndexError` when `MARKDOWN_VIEW_TEMPLATE_USE_TOC` is enabled
+        # (the default), since `page_title` unconditionally indexed the
+        # (empty) TOC tokens.
+        response = self.client.get(reverse("no_headers"))
+        self.assertEqual(response.status_code, 200)
+        context = response.context
+        self.assertEqual(context["use_toc"], True)
+        self.assertIn("markdown_toc", context)
+        self.assertNotIn("page_title", context)
+
     def test_image_extension_renders_resolvable_static_tag(self):
         response = self.client.get(reverse("readme"))
         content = response.content.decode()

@@ -45,6 +45,15 @@ urlpatterns = [
         MarkdownView.as_view(file_name="testapp/docs/OTHER.md"),
         name="other",
     ),
+    # Has no Markdown headers at all, to prove that rendering with
+    # `MARKDOWN_VIEW_TEMPLATE_USE_TOC` enabled (the default) doesn't raise
+    # an `IndexError` when there's nothing for the `toc` extension to build
+    # a table of contents from.
+    path(
+        "no-headers/",
+        MarkdownView.as_view(file_name="testapp/NO_HEADERS.md"),
+        name="no_headers",
+    ),
     path(
         "logged-in/",
         LoggedInMarkdownView.as_view(file_name="testapp/LOGGED_IN.md"),
