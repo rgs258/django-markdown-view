@@ -1,4 +1,5 @@
 import logging
+import os
 
 import markdown
 from django.conf import settings
@@ -12,7 +13,9 @@ from markdown_view.constants import (
     DEFAULT_MARKDOWN_VIEW_EXTENSIONS, DEFAULT_MARKDOWN_VIEW_TEMPLATE,
     DEFAULT_MARKDOWN_VIEW_USE_REQUEST_CONTEXT, DEFAULT_MARKDOWN_VIEW_EXTRA_CONTEXT,
     DEFAULT_MARKDOWN_VIEW_TEMPLATE_USE_HIGHLIGHT_JS, DEFAULT_MARKDOWN_VIEW_TEMPLATE_USE_TOC,
+    DEFAULT_MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS,
 )
+from markdown_view.registry import rewrite_markdown_links
 
 logger = logging.getLogger(__name__)
 
@@ -27,13 +30,27 @@ class MarkdownView(TemplateView):
                 settings, "MARKDOWN_VIEW_LOADERS", DEFAULT_MARKDOWN_VIEW_LOADERS)
             )
             template = engine.get_template(self.file_name)
+            source_path = os.path.normpath(template.origin.name)
             md = markdown.Markdown(extensions=getattr(
                 settings,
                 "MARKDOWN_VIEW_EXTENSIONS",
                 DEFAULT_MARKDOWN_VIEW_EXTENSIONS
             ))
+            converted_html = md.convert(template.source)
+            if getattr(
+                    settings,
+                    "MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS",
+                    DEFAULT_MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS
+            ):
+                # Rewrite relative links to other .md files (e.g.
+                # `[See also](../README-cron.md)`) to the actual routed URL
+                # of the MarkdownView serving that file, if one is
+                # registered -- otherwise the raw relative link can't
+                # resolve, since this page is served at its own URL, not
+                # at the source file's location on disk.
+                converted_html = rewrite_markdown_links(converted_html, source_path)
             template = Template(
-                "{{% load static %}}{}".format(md.convert(template.source))
+                "{{% load static %}}{}".format(converted_html)
             )
             render_context_base = {}
             if getattr(
