@@ -2,7 +2,7 @@ name: Test
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
   workflow_dispatch:
 
@@ -17,26 +17,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - python-version: "3.9"
-            toxenv: django42-py39
           - python-version: "3.10"
-            toxenv: django42-py310
-          - python-version: "3.10"
-            toxenv: django50-py310
-          - python-version: "3.10"
-            toxenv: django51-py310
+            toxenv: django52-py310
           - python-version: "3.11"
-            toxenv: django42-py311
-          - python-version: "3.11"
-            toxenv: django50-py311
-          - python-version: "3.11"
-            toxenv: django51-py311
+            toxenv: django52-py311
           - python-version: "3.12"
-            toxenv: django42-py312
+            toxenv: django52-py312
           - python-version: "3.12"
-            toxenv: django50-py312
-          - python-version: "3.12"
-            toxenv: django51-py312
+            toxenv: django60-py312
+          - python-version: "3.13"
+            toxenv: django52-py313
+          - python-version: "3.13"
+            toxenv: django60-py313
     steps:
       - uses: actions/checkout@v4
 

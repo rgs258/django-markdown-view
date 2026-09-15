@@ -2,8 +2,8 @@
 
 Registers a variety of ``MarkdownView`` (and subclass) routes, plus a few
 routes intentionally shaped to exercise ``registry.py``'s edge cases (no
-``name=``, a required URL argument, namespacing, and a non-``MarkdownView``
-callback).
+``name=``, a required URL argument, namespacing, a non-``MarkdownView``
+callback, and two differently-named routes serving the same source file).
 """
 from django.urls import include, path
 from django.views.generic import TemplateView
@@ -78,5 +78,23 @@ urlpatterns = [
         MarkdownView.as_view(file_name="testapp/DOES_NOT_EXIST.md"),
         name="missing_source",
     ),
+    # Two differently-named routes serving the *same* source file:
+    # `registry.py` must keep the first (`readme`) and skip this alias.
+    path(
+        "readme-alias/",
+        MarkdownView.as_view(file_name="testapp/README.md"),
+        name="readme_alias",
+    ),
     path("level1/", include(level1_patterns, namespace="level1")),
+    # Always serves `file_name="readme.md"`, resolved relative to whatever
+    # `MARKDOWN_VIEW_LOADERS` is active (rather than the fixed `testapp/`
+    # app). Used by
+    # `test_registry.GetMarkdownViewUrlRegistryLoaderInvalidationTests` to
+    # prove the registry cache invalidates when `MARKDOWN_VIEW_LOADERS`
+    # changes even though this URLconf/resolver doesn't.
+    path(
+        "loader-readme/",
+        MarkdownView.as_view(file_name="readme.md"),
+        name="loader_test_readme",
+    ),
 ]
