@@ -201,6 +201,28 @@ Release Notes and Contributors
 * `Release notes <https://github.com/rgs258/django-markdown-view/releases>`_
 * `Our wonderful contributors <https://github.com/rgs258/django-markdown-view/graphs/contributors>`_
 
+Releasing
+---------
+
+Versions are derived from git tags via `setuptools_scm`_, so there is no
+hardcoded ``version`` to bump.
+
+To publish a new release to PyPI:
+
+#. Merge the changes for the release into ``master``.
+
+#. `Create a GitHub Release`_ with a tag matching the desired version
+   (e.g. ``0.0.6``).
+
+#. Publishing the release triggers the `Publish to PyPI`_ GitHub Actions
+   workflow, which builds the sdist/wheel and uploads them to PyPI using
+   `PyPI Trusted Publishing`_ (no stored token required).
+
+.. _setuptools_scm: https://github.com/pypa/setuptools_scm
+.. _`Create a GitHub Release`: https://github.com/rgs258/django-markdown-view/releases/new
+.. _`Publish to PyPI`: https://github.com/rgs258/django-markdown-view/actions/workflows/publish.yml
+.. _`PyPI Trusted Publishing`: https://docs.pypi.org/trusted-publishers/
+
 Contributing
 ------------
 
