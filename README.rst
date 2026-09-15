@@ -201,6 +201,62 @@ Release Notes and Contributors
 * `Release notes <https://github.com/rgs258/django-markdown-view/releases>`_
 * `Our wonderful contributors <https://github.com/rgs258/django-markdown-view/graphs/contributors>`_
 
+Releasing
+---------
+
+Versions are derived from git tags via `setuptools_scm`_, so there is no
+hardcoded ``version`` to bump.
+
+To publish a new release to PyPI:
+
+#. Merge the changes for the release into ``master``.
+
+#. `Create a GitHub Release`_ with a tag matching the desired version
+   (e.g. ``0.0.6``).
+
+#. Publishing the release triggers the `Publish to PyPI`_ GitHub Actions
+   workflow, which builds the sdist/wheel and uploads them to PyPI using
+   `PyPI Trusted Publishing`_ (no stored token required).
+
+Publishing beta / pre-releases
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Beta and other pre-releases can be published to PyPI the same way as a
+regular release, and this is standard practice: PyPI understands
+`PEP 440`_ pre-release version identifiers and will not let a plain
+``pip install django-markdown-view`` pick them up by default, so betas are
+safe to publish without risking accidental adoption.
+
+#. Tag the release commit with an explicit PEP 440 pre-release suffix
+   instead of a plain version, e.g. ``0.0.6b1`` for a beta, or ``0.0.6rc1``
+   for a release candidate. ``setuptools_scm`` will pick up the tag as-is.
+
+#. `Create a GitHub Release`_ for that tag and check the **"Set as a
+   pre-release"** box. This only affects how the release is labeled on
+   GitHub; PyPI determines pre-release status purely from the version
+   string.
+
+#. Publishing the release triggers the same `Publish to PyPI`_ workflow,
+   which uploads the pre-release to PyPI. It will appear in the release
+   history but will not be installed by ``pip install
+   django-markdown-view``.
+
+#. Users who want to try it must opt in, e.g. ``pip install --pre
+   django-markdown-view`` or by pinning the exact version, such as
+   ``pip install django-markdown-view==0.0.6b1``.
+
+#. If further fixes are needed, bump the pre-release number (``0.0.6b2``,
+   ``0.0.6b3``, ...) rather than reusing one, since PyPI does not allow
+   re-uploading files for a version that has already been published.
+   Once the release is stable, tag and publish the final version without
+   a suffix (e.g. ``0.0.6``), which then becomes installable by default.
+
+.. _setuptools_scm: https://github.com/pypa/setuptools_scm
+.. _`Create a GitHub Release`: https://github.com/rgs258/django-markdown-view/releases/new
+.. _`Publish to PyPI`: https://github.com/rgs258/django-markdown-view/actions/workflows/publish.yml
+.. _`PyPI Trusted Publishing`: https://docs.pypi.org/trusted-publishers/
+.. _`PEP 440`: https://peps.python.org/pep-0440/#pre-releases
+
 Contributing
 ------------
 
