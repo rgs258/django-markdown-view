@@ -41,15 +41,15 @@ class BuildMarkdownViewUrlRegistryTests(SimpleTestCase):
 
     def test_builds_expected_mapping(self):
         built = registry.build_markdown_view_url_registry()
-        self.assertEqual(built[_testapp_path("README.md")], "/readme/")
-        self.assertEqual(built[_testapp_path("docs", "OTHER.md")], "/other/")
-        self.assertEqual(built[_testapp_path("LOGGED_IN.md")], "/logged-in/")
-        self.assertEqual(built[_testapp_path("STAFF.md")], "/staff/")
+        self.assertEqual(built[_testapp_path("README.md")], "readme")
+        self.assertEqual(built[_testapp_path("docs", "OTHER.md")], "other")
+        self.assertEqual(built[_testapp_path("LOGGED_IN.md")], "logged_in")
+        self.assertEqual(built[_testapp_path("STAFF.md")], "staff")
 
     def test_resolves_through_two_levels_of_namespaced_include(self):
         built = registry.build_markdown_view_url_registry()
         self.assertEqual(
-            built[_testapp_path("NESTED.md")], "/level1/level2/readme/"
+            built[_testapp_path("NESTED.md")], "level1:level2:nested_readme"
         )
 
     def test_skips_route_with_no_name(self):
@@ -57,7 +57,7 @@ class BuildMarkdownViewUrlRegistryTests(SimpleTestCase):
         # "testapp/README.md" is also served (with a name) at "/readme/";
         # the unnamed route pointing at the same file must not overwrite or
         # duplicate that mapping with anything unreversable.
-        self.assertEqual(built[_testapp_path("README.md")], "/readme/")
+        self.assertEqual(built[_testapp_path("README.md")], "readme")
 
     def test_skips_route_requiring_url_argument(self):
         built = registry.build_markdown_view_url_registry()
@@ -110,7 +110,7 @@ class RewriteMarkdownLinksTests(SimpleTestCase):
     def setUp(self):
         self.source_path = _testapp_path("README.md")
         self.test_registry = {
-            _testapp_path("docs", "OTHER.md"): "/other/",
+            _testapp_path("docs", "OTHER.md"): "other",
         }
 
     def _rewrite(self, html):
