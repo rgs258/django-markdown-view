@@ -28,6 +28,7 @@ import re
 from urllib.parse import urlsplit, urlunsplit
 
 from django.conf import settings
+from django.core.signals import setting_changed
 from django.template import Engine, TemplateDoesNotExist
 from django.urls import NoReverseMatch, URLResolver, get_resolver, reverse
 
@@ -43,7 +44,29 @@ logger = logging.getLogger(__name__)
 # it -- `reverse()` can depend on request/runtime context (e.g. the active
 # language under `i18n_patterns()`, or the active script prefix), so it must
 # be called fresh every time a link is actually rewritten.
+#
+# This cache key does *not* otherwise account for `MARKDOWN_VIEW_LOADERS`,
+# since a route's file resolution normally never changes while its
+# resolver/urlconf stays the same -- so instead we listen for
+# `MARKDOWN_VIEW_LOADERS` changing (e.g. via `override_settings` in tests)
+# below and explicitly clear the cache when it does.
 _registry_cache = {}
+
+
+def _on_setting_changed(*, setting, **kwargs):
+    """
+    Invalidate the cached URL registry whenever `MARKDOWN_VIEW_LOADERS`
+    changes (e.g. via `override_settings` in tests), since the registry's
+    `source_path` keys depend on how that setting resolves `file_name`
+    values to files on disk, and merely rebuilding on urlconf/resolver
+    identity change (as `get_markdown_view_url_registry()` does) wouldn't
+    otherwise catch a loader-only change.
+    """
+    if setting == "MARKDOWN_VIEW_LOADERS":
+        clear_markdown_view_url_registry_cache()
+
+
+setting_changed.connect(_on_setting_changed)
 
 
 def _build_engine():
