@@ -1,7 +1,9 @@
 [run]
 branch = True
 source =
-    markdown-view
+    markdown_view
 
 [report]
 show_missing = True
+omit =
+    markdown_view/tests/*
