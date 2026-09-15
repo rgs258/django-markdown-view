@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=77", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-markdown-view"
+description = "Serve .md pages as Django views."
+readme = "README.rst"
+license = "BSD-3-Clause"
+authors = [
+    { name = "Ryan J. Sullivan", email = "ryanj@ryanjsullivan.com" },
+]
+keywords = ["django", "markdown", "markdown view", "md"]
+dynamic = ["version"]
+requires-python = ">=3.10"
+license-files = ["LICENSE"]
+dependencies = [
+    "django>=5.2",
+    "markdown>=3.2",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: Django :: 5.2",
+    "Framework :: Django :: 6.0",
+    "Framework :: Django",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+[project.urls]
+Homepage = "http://github.com/rgs258/django-markdown-view"
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["markdown_view*"]
+
+[tool.setuptools_scm]
