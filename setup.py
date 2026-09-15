@@ -13,7 +13,7 @@ setup(
     url='http://github.com/rgs258/django-markdown-view',
     packages=find_packages(),
     install_requires=[
-        'django>=2.2',
+        'django>=5.2',
         'markdown>=3.2',
     ],
     tests_require=[
@@ -25,9 +25,8 @@ setup(
     use_scm_version=True,
     classifiers=[
         'Development Status :: 3 - Alpha',
-        'Framework :: Django :: 2',
-        'Framework :: Django :: 3',
-        'Framework :: Django :: 4',
+        'Framework :: Django :: 5.2',
+        'Framework :: Django :: 6.0',
         'Framework :: Django',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
@@ -35,10 +34,10 @@ setup(
         'Programming Language :: Python',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
     ],
     zip_safe=False,
 )
