@@ -157,8 +157,35 @@ All settings are optional. See `<markdown_view/constants.py>`_ for the defaults.
     resolution logic. This is best-effort: links to files that aren't
     routed anywhere, or whose route is behind a required URL argument, are
     left exactly as Markdown would otherwise have rendered them -- nothing
-    breaks if a linked file simply isn't routed. Set to `False` to disable
-    this rewriting entirely.
+    breaks if a linked file simply isn't routed, unless
+    `MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT` is also configured (see below).
+    Set to `False` to disable this rewriting entirely, including the
+    `MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT` fallback.
+
+* `MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT`
+
+    Defaults to `None` (disabled). Relative links that `MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS`
+    can't resolve to a registered `MarkdownView` route -- including links to
+    files other than `.md`, such as repository-relative links to source
+    code (e.g. ``[`example.module.helper`](src/example/module.py)``) --
+    are left unchanged by default. Setting this to a root URL instead
+    resolves such links against it, e.g.:
+
+    .. code-block:: python
+
+        MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT = (
+            "https://git.example.com/example/project/-/blob/main/"
+        )
+
+    With the setting above, ``[`example.module.helper`](src/example/module.py)``
+    would render as a link to
+    ``https://git.example.com/example/project/-/blob/main/src/example/module.py``.
+    Registered-route rewriting always takes precedence over this fallback;
+    it only applies once a link has already failed to resolve to a route.
+    `./` and `../` path segments, and any query string or `#fragment`, are
+    resolved/preserved correctly. Absolute URLs, root-relative URLs,
+    fragment-only links, and URLs with an explicit scheme are never
+    affected by this setting.
 
 Experimental Settings
 ~~~~~~~~~~~~~~~~~~~~~
@@ -188,7 +215,9 @@ At a high level, `MarkdownView` will:
 
 #. If `MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS` is enabled, rewrite any
    relative links to other `.md` files that resolve to a file served by a
-   registered `MarkdownView` route, to that route's actual URL
+   registered `MarkdownView` route, to that route's actual URL; any
+   relative link left unresolved by that step is instead resolved against
+   `MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT`, if configured
 
 #. Render as a template, the resulting HTML prepended with
    `{% load static %}`, into several context variables

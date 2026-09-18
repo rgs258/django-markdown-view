@@ -292,6 +292,125 @@ class RewriteMarkdownLinksTests(SimpleTestCase):
         self.assertEqual(result, '<a href="/other/">See also</a>')
 
 
+FALLBACK_ROOT = "https://git.example.com/example/project/-/blob/main/"
+
+
+class RewriteMarkdownLinksUnresolvedLinkRootTests(SimpleTestCase):
+    """
+    Covers `MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT`, the optional fallback root
+    that relative links unresolved to a registered `MarkdownView` route
+    (including non-`.md` links, e.g. repository-relative source links) are
+    resolved against instead of being left unchanged.
+    """
+
+    def setUp(self):
+        self.source_path = _testapp_path("README.md")
+        self.test_registry = {
+            _testapp_path("docs", "OTHER.md"): "other",
+        }
+
+    def _rewrite(self, html):
+        return registry.rewrite_markdown_links(
+            html, self.source_path, registry=self.test_registry
+        )
+
+    def test_without_fallback_root_configured_unrouted_md_link_is_unchanged(self):
+        html = '<a href="UNROUTED.md">Unrouted</a>'
+        self.assertEqual(self._rewrite(html), html)
+
+    def test_without_fallback_root_configured_non_md_link_is_unchanged(self):
+        html = '<a href="src/example/module.py">Source</a>'
+        self.assertEqual(self._rewrite(html), html)
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT)
+    def test_resolves_non_md_link_against_fallback_root(self):
+        html = '<a href="src/example/module.py">Source</a>'
+        self.assertEqual(
+            self._rewrite(html),
+            '<a href="https://git.example.com/example/project/-/blob/main/'
+            'src/example/module.py">Source</a>',
+        )
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT)
+    def test_resolves_unrouted_md_link_against_fallback_root(self):
+        html = '<a href="UNROUTED.md">Unrouted</a>'
+        self.assertEqual(
+            self._rewrite(html),
+            '<a href="https://git.example.com/example/project/-/blob/main/'
+            'UNROUTED.md">Unrouted</a>',
+        )
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT)
+    def test_registered_route_takes_precedence_over_fallback_root(self):
+        html = '<a href="docs/OTHER.md">See also</a>'
+        self.assertEqual(self._rewrite(html), '<a href="/other/">See also</a>')
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT)
+    def test_stale_registry_entry_falls_back_to_root(self):
+        # A registered route that no longer reverses is still treated as
+        # "unresolved", so the fallback root applies to it too, per the
+        # documented resolution order.
+        stale_registry = {
+            _testapp_path("docs", "OTHER.md"): "no-such-route-name",
+        }
+        html = '<a href="docs/OTHER.md">See also</a>'
+        result = registry.rewrite_markdown_links(
+            html, self.source_path, registry=stale_registry
+        )
+        self.assertEqual(
+            result,
+            '<a href="https://git.example.com/example/project/-/blob/main/'
+            'docs/OTHER.md">See also</a>',
+        )
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT)
+    def test_handles_dot_dot_relative_path_segments(self):
+        html = '<a href="../other-project/module.py">Source</a>'
+        self.assertEqual(
+            self._rewrite(html),
+            '<a href="https://git.example.com/example/project/-/blob/'
+            'other-project/module.py">Source</a>',
+        )
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT)
+    def test_handles_dot_relative_path_segments(self):
+        html = '<a href="./src/module.py">Source</a>'
+        self.assertEqual(
+            self._rewrite(html),
+            '<a href="https://git.example.com/example/project/-/blob/main/'
+            'src/module.py">Source</a>',
+        )
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT)
+    def test_preserves_query_string_and_fragment_on_fallback_link(self):
+        html = '<a href="src/module.py?plain=1#L10">Source</a>'
+        self.assertEqual(
+            self._rewrite(html),
+            '<a href="https://git.example.com/example/project/-/blob/main/'
+            'src/module.py?plain=1#L10">Source</a>',
+        )
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT)
+    def test_leaves_absolute_link_unchanged(self):
+        html = '<a href="/somewhere/">Absolute</a>'
+        self.assertEqual(self._rewrite(html), html)
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT)
+    def test_leaves_fully_qualified_url_unchanged(self):
+        html = '<a href="https://example.com">External</a>'
+        self.assertEqual(self._rewrite(html), html)
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT)
+    def test_leaves_fragment_only_link_unchanged(self):
+        html = '<a href="#section-one">Jump</a>'
+        self.assertEqual(self._rewrite(html), html)
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=None)
+    def test_explicit_none_leaves_unrouted_link_unchanged(self):
+        html = '<a href="src/example/module.py">Source</a>'
+        self.assertEqual(self._rewrite(html), html)
+
+
 class RewriteMarkdownLinksScriptPrefixTests(SimpleTestCase):
     """
     Regression coverage for the fact that `registry.py` caches the
