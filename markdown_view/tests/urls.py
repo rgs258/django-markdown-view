@@ -87,6 +87,15 @@ urlpatterns = [
         MarkdownView.as_view(file_name="testapp/DOES_NOT_EXIST.md"),
         name="missing_source",
     ),
+    # Contains literal `{% ... %}`/`{{ ... }}` text (documenting template
+    # syntax as prose) alongside a real `{% static %}` tag (from an
+    # inline image) and a `{{ pk }}` reference -- used to prove
+    # `escape_unsafe_template_syntax()` distinguishes between them.
+    path(
+        "escaping/",
+        MarkdownView.as_view(file_name="testapp/ESCAPING_TEST.md"),
+        name="escaping_test",
+    ),
     # Two differently-named routes serving the *same* source file:
     # `registry.py` must keep the first (`readme`) and skip this alias.
     path(
