@@ -19,20 +19,25 @@ This is intentionally best-effort: routes behind a required URL argument,
 or wrapped by a decorator that doesn't preserve the underlying view's
 ``view_class``/``view_initkwargs`` attributes, are silently skipped. A link
 that can't be resolved to a known route is left exactly as markdown would
-otherwise have rendered it, so nothing breaks if a target file simply isn't
-routed anywhere.
+otherwise have rendered it, unless a fallback root is configured via
+``MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT`` (see ``rewrite_markdown_links()``),
+in which case such links -- including relative links to files other than
+``.md``, such as repository-relative source links -- are resolved against
+that root instead.
 """
 import logging
 import os
 import re
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from django.conf import settings
 from django.core.signals import setting_changed
 from django.template import Engine, TemplateDoesNotExist
 from django.urls import NoReverseMatch, URLResolver, get_resolver, reverse
 
-from markdown_view.constants import DEFAULT_MARKDOWN_VIEW_LOADERS
+from markdown_view.constants import (
+    DEFAULT_MARKDOWN_VIEW_LOADERS, DEFAULT_MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -265,11 +270,25 @@ def rewrite_markdown_links(html, source_path, registry=None):
     routed URL of the `MarkdownView` serving that file, if one is
     registered.
 
-    Links that are absolute (have a scheme or network location, or start
-    with `/`) or don't target a `.md` file are left untouched, as are
-    relative `.md` links with no matching registered route (they render
-    exactly as markdown would otherwise produce). Any query string or
-    `#fragment` on the original link is preserved on the rewritten URL.
+    When a relative link doesn't resolve to a registered route (e.g. it
+    targets a file that isn't served by any `MarkdownView`, or isn't a
+    `.md` file at all -- such as a repository-relative link to source
+    code), it's instead resolved against the optional
+    `MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT` setting, if configured. This lets
+    links like ``[helper](src/example/module.py)`` -- which resolve
+    correctly when browsing the source repository, but not when rendered
+    as a page served at its own unrelated URL -- point somewhere useful
+    (e.g. the same file, viewed on the project's SCM web interface).
+    Registered-route resolution always takes precedence over this
+    fallback. With no fallback root configured, such links are left
+    exactly as markdown would otherwise have rendered them.
+
+    Links that are absolute (have a scheme or network location, start
+    with `/`, or are fragment-only) are always left untouched. Any query
+    string or `#fragment` on the original link is preserved on the
+    rewritten URL, and `./`/`../` relative-path segments are resolved
+    correctly (rather than through simple string concatenation) when
+    applying the fallback root.
 
     :param html: Rendered HTML markup, already converted from Markdown.
     :param source_path: Absolute filesystem path of the `.md` file `html`
@@ -286,11 +305,16 @@ def rewrite_markdown_links(html, source_path, registry=None):
     # file* lives in, not relative to the URL the rendered page happens to
     # be served at.
     source_dir = os.path.dirname(source_path)
+    unresolved_link_root = getattr(
+        settings,
+        "MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT",
+        DEFAULT_MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT,
+    )
 
     def _replace(match):
         prefix, href, suffix = match.groups()
         # Use real URL parsing rather than string tests, so query strings
-        # and fragments on otherwise-relative `.md` links (e.g.
+        # and fragments on otherwise-relative links (e.g.
         # `guide.md?format=print#section`) are recognized and preserved,
         # while links with a scheme (`mailto:`, `tel:`, `custom-scheme:`,
         # `https://...`) or netloc, or that are site-root-relative, are
@@ -299,45 +323,57 @@ def rewrite_markdown_links(html, source_path, registry=None):
         if parts.scheme or parts.netloc or parts.path.startswith("/"):
             # Already absolute -- nothing for us to resolve, leave as-is.
             return match.group(0)
-        if not parts.path.lower().endswith(".md"):
-            # Not a link to another markdown source file (e.g. an image,
-            # a `.txt` file, an in-page anchor) -- leave as-is.
+        if not parts.path:
+            # Fragment-only (e.g. "#section") or query-only link -- no
+            # relative target to resolve at all.
             return match.group(0)
 
-        # Resolve the relative path exactly as the browser would if this
-        # were a raw file link, then see if some route serves that exact
-        # file.
-        resolved_path = os.path.normpath(os.path.join(source_dir, parts.path))
-        full_name = registry.get(resolved_path)
-        if full_name is None:
-            # Points at a real .md file, but nothing routes it -- leave
-            # the link exactly as Markdown would otherwise have rendered
-            # it, rather than producing a broken URL of our own.
-            logger.debug(
-                "markdown_view: no registered route for linked file %r "
-                "(resolved from %r while rendering %r).",
-                resolved_path, href, source_path,
+        resolved_url = None
+        if parts.path.lower().endswith(".md"):
+            # Resolve the relative path exactly as the browser would if
+            # this were a raw file link, then see if some route serves
+            # that exact file.
+            resolved_path = os.path.normpath(
+                os.path.join(source_dir, parts.path)
             )
-            return match.group(0)
+            full_name = registry.get(resolved_path)
+            if full_name is None:
+                logger.debug(
+                    "markdown_view: no registered route for linked file "
+                    "%r (resolved from %r while rendering %r).",
+                    resolved_path, href, source_path,
+                )
+            else:
+                try:
+                    # Resolved fresh on every call (rather than cached),
+                    # since `reverse()`'s result can depend on
+                    # request/runtime context -- e.g. the currently
+                    # active language under `i18n_patterns()`, or the
+                    # active script prefix -- not just the URLconf.
+                    resolved_url = reverse(full_name)
+                except NoReverseMatch:
+                    # The registry is stale relative to the active
+                    # URLconf (e.g. it changed since the registry was
+                    # built).
+                    logger.debug(
+                        "markdown_view: could not reverse %r for linked "
+                        "file %r while rendering %r; falling back.",
+                        full_name, resolved_path, source_path,
+                    )
 
-        try:
-            # Resolved fresh on every call (rather than cached), since
-            # `reverse()`'s result can depend on request/runtime context --
-            # e.g. the currently active language under `i18n_patterns()`,
-            # or the active script prefix -- not just the URLconf.
-            url = reverse(full_name)
-        except NoReverseMatch:
-            # The registry is stale relative to the active URLconf (e.g. it
-            # changed since the registry was built) -- leave as-is rather
-            # than producing a broken link.
-            logger.debug(
-                "markdown_view: could not reverse %r for linked file %r "
-                "while rendering %r; leaving link unrewritten.",
-                full_name, resolved_path, source_path,
-            )
-            return match.group(0)
+        if resolved_url is None:
+            if not unresolved_link_root:
+                # No registered route, and no fallback root configured --
+                # leave the link exactly as Markdown would otherwise have
+                # rendered it, rather than producing a broken URL of our
+                # own.
+                return match.group(0)
+            # `urljoin()` (rather than plain string concatenation)
+            # correctly resolves `./` and `../` path segments in the
+            # original relative link against the fallback root.
+            resolved_url = urljoin(unresolved_link_root, parts.path)
 
-        new_href = urlunsplit(("", "", url, parts.query, parts.fragment))
+        new_href = urlunsplit(("", "", resolved_url, parts.query, parts.fragment))
         return f"{prefix}{new_href}{suffix}"
 
     return _HREF_RE.sub(_replace, html)

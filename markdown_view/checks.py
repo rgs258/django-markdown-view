@@ -16,6 +16,9 @@ SETTINGS_TYPES = {
     "MARKDOWN_VIEW_USE_REQUEST_CONTEXT": bool,
     "MARKDOWN_VIEW_EXTRA_CONTEXT": dict,
     "MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS": bool,
+    # `None` is an explicitly valid value here (meaning "no fallback root
+    # configured"), unlike every other setting in this dict.
+    "MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT": (str, type(None)),
 }
 
 

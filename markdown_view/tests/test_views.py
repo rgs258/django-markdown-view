@@ -112,6 +112,64 @@ class MarkdownViewRewriteInternalLinksTests(TestCase):
         self.assertNotIn('href="/other/"', content)
 
 
+class MarkdownViewUnresolvedLinkRootTests(TestCase):
+    """
+    End-to-end coverage (via a real rendered `MarkdownView`) of
+    `MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT`, the optional fallback root for
+    relative links that `MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS` can't
+    resolve to a registered route.
+    """
+
+    FALLBACK_ROOT = "https://git.example.com/example/project/-/blob/main/"
+
+    def setUp(self):
+        registry.clear_markdown_view_url_registry_cache()
+        self.addCleanup(registry.clear_markdown_view_url_registry_cache)
+
+    def test_without_fallback_root_unrouted_and_non_md_links_are_unchanged(self):
+        response = self.client.get(reverse("readme"))
+        content = response.content.decode()
+        self.assertIn('href="UNROUTED.md"', content)
+        self.assertIn('href="notes.txt"', content)
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT)
+    def test_unrouted_md_link_resolves_against_fallback_root(self):
+        response = self.client.get(reverse("readme"))
+        content = response.content.decode()
+        self.assertIn(
+            'href="https://git.example.com/example/project/-/blob/main/'
+            'UNROUTED.md"',
+            content,
+        )
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT)
+    def test_non_md_link_resolves_against_fallback_root(self):
+        response = self.client.get(reverse("readme"))
+        content = response.content.decode()
+        self.assertIn(
+            'href="https://git.example.com/example/project/-/blob/main/'
+            'notes.txt"',
+            content,
+        )
+
+    @override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT)
+    def test_registered_route_still_takes_precedence(self):
+        response = self.client.get(reverse("readme"))
+        content = response.content.decode()
+        self.assertIn('href="/other/"', content)
+
+    @override_settings(
+        MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS=False,
+        MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=FALLBACK_ROOT,
+    )
+    def test_disabling_rewrite_also_disables_fallback(self):
+        response = self.client.get(reverse("readme"))
+        content = response.content.decode()
+        self.assertIn('href="UNROUTED.md"', content)
+        self.assertIn('href="notes.txt"', content)
+        self.assertIn('href="docs/OTHER.md"', content)
+
+
 class LoggedInMarkdownViewTests(TestCase):
     def test_anonymous_redirects_to_login(self):
         response = self.client.get(reverse("logged_in"))

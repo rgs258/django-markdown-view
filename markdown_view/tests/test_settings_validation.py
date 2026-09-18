@@ -22,19 +22,40 @@ class SettingsTypeValidationTests(SimpleTestCase):
             MARKDOWN_VIEW_USE_REQUEST_CONTEXT=False,
             MARKDOWN_VIEW_EXTRA_CONTEXT={},
             MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS=True,
+            MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT="https://example.com/blob/main/",
         ):
             self.assertEqual(markdown_view_check(app_configs=[]), [])
 
+    def test_valid_settings_produce_no_errors_with_unresolved_link_root_none(self):
+        # `None` is the documented "disabled" value for this setting, and
+        # is explicitly valid, unlike every other setting in SETTINGS_TYPES.
+        with override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=None):
+            self.assertEqual(markdown_view_check(app_configs=[]), [])
+
     def test_wrong_type_produces_an_error_for_every_setting(self):
-        # `None` isn't a valid value for any of these settings (every
-        # expected type in SETTINGS_TYPES excludes it), so this drives one
-        # `checks.Error` per declared setting.
+        # `None` isn't a valid value for any of these settings, except
+        # `MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT`, which explicitly treats
+        # `None` as "no fallback root configured" -- so this drives one
+        # `checks.Error` per declared setting other than that one.
+        none_tolerant_settings = {"MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT"}
         overrides = {name: None for name in SETTINGS_TYPES}
         with override_settings(**overrides):
             errors = markdown_view_check(app_configs=[])
-        self.assertEqual(len(errors), len(SETTINGS_TYPES))
+        self.assertEqual(
+            len(errors), len(SETTINGS_TYPES) - len(none_tolerant_settings)
+        )
         for error in errors:
             self.assertEqual(error.id, "markdown_view.E001")
+        self.assertNotIn(
+            "MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT",
+            " ".join(error.msg for error in errors),
+        )
+
+    def test_unresolved_link_root_wrong_type(self):
+        with override_settings(MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT=123):
+            errors = markdown_view_check(app_configs=[])
+        self.assertEqual(len(errors), 1)
+        self.assertIn("MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT", errors[0].msg)
 
     def test_bool_setting_wrong_type(self):
         with override_settings(MARKDOWN_VIEW_TEMPLATE_USE_TOC="not-a-bool"):
