@@ -160,6 +160,31 @@ All settings are optional. See `<markdown_view/constants.py>`_ for the defaults.
     breaks if a linked file simply isn't routed. Set to `False` to disable
     this rewriting entirely.
 
+* `MARKDOWN_VIEW_ESCAPE_UNSAFE_TEMPLATE_SYNTAX`
+
+    Defaults to `True`. `MarkdownView` re-parses the HTML converted from
+    Markdown as a Django template, so that the `{% static %}` tags
+    `ImageExtension` injects for image sources (and, when
+    `MARKDOWN_VIEW_USE_REQUEST_CONTEXT`/`MARKDOWN_VIEW_EXTRA_CONTEXT` are
+    used, any `{{ variable }}` reference to a real context key) actually
+    resolve. Markdown source files are prose, though, and prose about
+    Django itself routinely contains literal `{% ... %}`/`{{ ... }}` text
+    that was never meant to be executed as a template -- left unescaped,
+    an unrecognized `{% ... %}` block raises `TemplateSyntaxError` (a hard
+    500 for the whole page), and an unrecognized `{{ ... }}` variable is
+    silently rendered as an empty string (silent content loss, with no
+    error at all).
+
+    When enabled (the default), every `{% ... %}`/`{{ ... }}` span in the
+    converted HTML is escaped to inert literal text *except* the exact
+    `{% static '...' %}` tags `ImageExtension` injects, and bare
+    `{{ identifier }}` references to a name actually present in the
+    context the page renders with. See
+    `markdown_view/escaping.py <markdown_view/escaping.py>`_ for the exact
+    rules. Set to `False` to restore the previous, fully-permissive
+    behavior (the whole converted document is parsed as a real Django
+    template, with no escaping at all).
+
 Experimental Settings
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -168,13 +193,18 @@ Experimental Settings
     If the request context should be used as a base when creating the context with
     which to render the Markdown internally. This is because the Markdown is rendered
     once first in order to prepend it with `{% load static %}`.
-    This is not well tested; YMMV.
+    This is not well tested; YMMV. Note that a `{{ name }}` reference only
+    resolves against this context if `MARKDOWN_VIEW_ESCAPE_UNSAFE_TEMPLATE_SYNTAX`
+    (see above) recognizes `name` as a safe context key -- otherwise it's
+    escaped to literal text rather than looked up.
 
 * `MARKDOWN_VIEW_EXTRA_CONTEXT`
 
     Any extra context to send to the internal render of the Markdown. Can be used
     to expose context to template tags embedded in the Markdown.
-    This is not well tested; YMMV.
+    This is not well tested; YMMV. As with `MARKDOWN_VIEW_USE_REQUEST_CONTEXT`
+    above, a `{{ name }}` reference to one of these keys is only left live
+    when `MARKDOWN_VIEW_ESCAPE_UNSAFE_TEMPLATE_SYNTAX` recognizes it as safe.
 
 
 Implementation

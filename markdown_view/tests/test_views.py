@@ -154,9 +154,16 @@ class MarkdownViewRequestContextTests(TestCase):
         self.assertIn('pk is "42"', content)
 
     def test_use_request_context_default_does_not_leak(self):
+        # When MARKDOWN_VIEW_USE_REQUEST_CONTEXT is disabled (the default),
+        # `pk` is not a recognized context variable, so
+        # escape_unsafe_template_syntax() renders `{{ pk }}` as inert
+        # literal text instead of Django's default "unresolved variable
+        # renders as an empty string" behavior -- the reader sees exactly
+        # what was written in the source file, rather than the value
+        # silently disappearing with no indication anything was wrong.
         response = self.client.get(reverse("context_test", args=[42]))
         content = response.content.decode()
-        self.assertIn('pk is ""', content)
+        self.assertIn('pk is "&#123;&#123; pk &#125;&#125;"', content)
 
 
 class MarkdownViewExtraContextTests(TestCase):
@@ -167,3 +174,49 @@ class MarkdownViewExtraContextTests(TestCase):
         response = self.client.get(reverse("context_test", args=[42]))
         content = response.content.decode()
         self.assertIn('extra is "injected-value"', content)
+
+
+class MarkdownViewEscapeUnsafeTemplateSyntaxIntegrationTests(TestCase):
+    """
+    End-to-end coverage for the two real bugs `escape_unsafe_template_syntax()`
+    fixes: an unrecognized `{% ... %}` block tag used to raise
+    `TemplateSyntaxError` (a hard 500 for the whole page), and an
+    unrecognized `{{ ... }}` variable used to silently render as an empty
+    string.
+    """
+
+    def test_arbitrary_block_tag_does_not_raise_and_renders_as_literal_text(self):
+        response = self.client.get(reverse("escaping_test"))
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+        self.assertIn(
+            "&#123;% include 'whatever.html' %&#125;", content
+        )
+
+    def test_unsafe_variable_renders_as_literal_text_not_empty_string(self):
+        response = self.client.get(reverse("escaping_test"))
+        content = response.content.decode()
+        self.assertIn(
+            "&#123;&#123; some_undocumented_variable &#125;&#125;", content
+        )
+        self.assertNotIn("<p>value is .</p>", content)
+
+    def test_real_static_tag_still_resolves_alongside_literal_syntax(self):
+        response = self.client.get(reverse("escaping_test"))
+        content = response.content.decode()
+        self.assertIn('src="/static/image.png"', content)
+
+    def test_pk_not_in_context_renders_as_literal_text(self):
+        response = self.client.get(reverse("escaping_test"))
+        content = response.content.decode()
+        self.assertIn('pk is "&#123;&#123; pk &#125;&#125;"', content)
+
+    @override_settings(MARKDOWN_VIEW_ESCAPE_UNSAFE_TEMPLATE_SYNTAX=False)
+    def test_disabling_escaping_restores_previous_crash_behavior(self):
+        # Documents the opt-out: with escaping disabled, an unrecognized
+        # block tag is once again parsed as real Django template syntax
+        # and raises, rather than being rendered as literal text.
+        from django.template.exceptions import TemplateSyntaxError
+
+        with self.assertRaises(TemplateSyntaxError):
+            self.client.get(reverse("escaping_test"))

@@ -33,6 +33,7 @@ from django.template import Engine, TemplateDoesNotExist
 from django.urls import NoReverseMatch, URLResolver, get_resolver, reverse
 
 from markdown_view.constants import DEFAULT_MARKDOWN_VIEW_LOADERS
+from markdown_view.loading import load_markdown_source
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +91,13 @@ def resolve_markdown_source_path(file_name, engine=None):
     its underlying source file, using the same template-loader resolution
     `MarkdownView` uses to actually load and render it.
 
+    Deliberately does not use `engine.get_template(...)`: that constructs
+    a `Template` from the file's raw, pre-Markdown-conversion contents,
+    which eagerly compiles/validates that raw text as Django template
+    syntax and can raise `TemplateSyntaxError` for a `.md` file whose raw
+    source happens to contain literal template-tag-shaped text anywhere.
+    `load_markdown_source()` resolves the same file without compiling it.
+
     :param file_name: A `file_name` value, as passed to
         `MarkdownView.as_view(file_name=...)`.
     :param engine: An optional `django.template.Engine` to resolve
@@ -100,10 +108,10 @@ def resolve_markdown_source_path(file_name, engine=None):
     if engine is None:
         engine = _build_engine()
     try:
-        template = engine.get_template(file_name)
+        _, source_path = load_markdown_source(file_name, engine)
     except TemplateDoesNotExist:
         return None
-    return os.path.normpath(template.origin.name)
+    return source_path
 
 
 def _iter_markdown_view_routes(resolver, namespace_parts=()):
