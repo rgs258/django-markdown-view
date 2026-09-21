@@ -19,6 +19,7 @@ SETTINGS_TYPES = {
     # `None` is an explicitly valid value here (meaning "no fallback root
     # configured"), unlike every other setting in this dict.
     "MARKDOWN_VIEW_UNRESOLVED_LINK_ROOT": (str, type(None)),
+    "MARKDOWN_VIEW_ESCAPE_UNSAFE_TEMPLATE_SYNTAX": bool,
 }
 
 

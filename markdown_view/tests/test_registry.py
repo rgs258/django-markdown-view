@@ -36,6 +36,17 @@ class ResolveMarkdownSourcePathTests(SimpleTestCase):
             registry.resolve_markdown_source_path("testapp/DOES_NOT_EXIST.md")
         )
 
+    def test_resolves_file_with_literal_template_syntax_in_raw_source(self):
+        # Regression test: this used to call `engine.get_template(...)`,
+        # which eagerly compiles a file's raw, pre-Markdown-conversion
+        # contents as a Django template. ESCAPING_TEST.md's raw source
+        # contains literal `{% include ... %}` text, which would raise
+        # `TemplateSyntaxError` right here rather than resolving a path.
+        self.assertEqual(
+            registry.resolve_markdown_source_path("testapp/ESCAPING_TEST.md"),
+            _testapp_path("ESCAPING_TEST.md"),
+        )
+
 
 class BuildMarkdownViewUrlRegistryTests(SimpleTestCase):
     def setUp(self):
