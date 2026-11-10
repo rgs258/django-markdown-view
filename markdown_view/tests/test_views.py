@@ -41,9 +41,21 @@ class MarkdownViewRenderingTests(TestCase):
         context = response.context
         self.assertIn("markdown_content", context)
         self.assertEqual(context["use_highlight_js"], True)
+        self.assertEqual(context["use_mermaid_js"], True)
         self.assertEqual(context["use_toc"], True)
         self.assertIn("markdown_toc", context)
         self.assertEqual(context["page_title"], "Test App README")
+
+    def test_mermaid_script_rendered_by_default(self):
+        response = self.client.get(reverse("readme"))
+        self.assertContains(response, '<pre><code class="language-mermaid">')
+        self.assertContains(response, "mermaid.run(")
+
+    @override_settings(MARKDOWN_VIEW_TEMPLATE_USE_MERMAID_JS=False)
+    def test_mermaid_script_absent_when_disabled(self):
+        response = self.client.get(reverse("readme"))
+        self.assertEqual(response.context["use_mermaid_js"], False)
+        self.assertNotContains(response, "mermaid.run(")
 
     @override_settings(MARKDOWN_VIEW_TEMPLATE_USE_TOC=False)
     def test_toc_context_absent_when_disabled(self):
@@ -278,3 +290,71 @@ class MarkdownViewEscapeUnsafeTemplateSyntaxIntegrationTests(TestCase):
 
         with self.assertRaises(TemplateSyntaxError):
             self.client.get(reverse("escaping_test"))
+
+
+class IndexViewTests(TestCase):
+    """
+    Covers `markdown_view.tests.testapp.views.index`, the bare-bones
+    landing page used to manually explore this project's test fixtures
+    (e.g. via `python manage.py runserver`), rather than just running
+    them headlessly via `manage.py test`.
+    """
+
+    def setUp(self):
+        registry.clear_markdown_view_url_registry_cache()
+        self.addCleanup(registry.clear_markdown_view_url_registry_cache)
+
+    def test_renders_200_with_header(self):
+        response = self.client.get(reverse("index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<h1>markdown_view test pages</h1>")
+
+    def test_lists_every_registered_markdown_view_route(self):
+        response = self.client.get(reverse("index"))
+        content = response.content.decode()
+        for name in (
+            "readme",
+            "other",
+            "no_headers",
+            "logged_in",
+            "staff",
+            "escaping_test",
+            "level1:level2:nested_readme",
+        ):
+            with self.subTest(name=name):
+                self.assertIn(
+                    '<li><a href="{}">{}</a></li>'.format(reverse(name), name),
+                    content,
+                )
+
+    def test_excludes_routes_the_registry_itself_skips(self):
+        # `noname` (no `name=`), `plain` (not a MarkdownView),
+        # `context_test`/`missing_source` (unreversable / unresolvable to
+        # a source file), and `readme_alias` (a same-file alias the
+        # registry ignores in favor of `readme`) must never appear here,
+        # since `index()` is built directly from the registry rather than
+        # walking `urlpatterns` itself.
+        response = self.client.get(reverse("index"))
+        content = response.content.decode()
+        for name in (
+            "noname", "plain", "context_test", "missing_source", "readme_alias",
+        ):
+            with self.subTest(name=name):
+                self.assertNotIn(">{}</a>".format(name), content)
+
+    def test_link_count_matches_registry_size(self):
+        response = self.client.get(reverse("index"))
+        content = response.content.decode()
+        self.assertEqual(
+            content.count("<li>"),
+            len(registry.get_markdown_view_url_registry()),
+        )
+
+    def test_links_are_sorted_by_reverse_name(self):
+        response = self.client.get(reverse("index"))
+        content = response.content.decode()
+        names = registry.get_markdown_view_url_registry().values()
+        positions = [
+            content.index(">{}</a>".format(name)) for name in sorted(names)
+        ]
+        self.assertEqual(positions, sorted(positions))

@@ -26,3 +26,30 @@
         });
     </script>
 {% endif %}
+
+{% if use_mermaid_js %}
+    <script>
+        (function () {
+            if (!document.querySelector("#markdown_view_content pre > code.language-mermaid, #markdown_view_content .mermaid")) {
+                return;
+            }
+            var script = document.createElement("script");
+            script.src = "https://cdnjs.cloudflare.com/ajax/libs/mermaid/12.3.0/mermaid.min.js";
+            script.integrity = "sha512-CaEn6DWYJ1MM0mFAT9nvJzd3z5gPsXTM7wzprb8wx615WzTnTSrGrbKkZUqe1s24lpW27X4HlIrSFvQm/ykqZA==";
+            script.crossOrigin = "anonymous";
+            script.referrerPolicy = "no-referrer";
+            script.onload = function () {
+                document.querySelectorAll("#markdown_view_content pre > code.language-mermaid").forEach(function (code) {
+                    var pre = code.parentElement;
+                    var div = document.createElement("div");
+                    div.className = "mermaid";
+                    div.textContent = code.textContent;
+                    pre.replaceWith(div);
+                });
+                mermaid.initialize({startOnLoad: false});
+                mermaid.run({querySelector: "#markdown_view_content .mermaid"});
+            };
+            document.head.appendChild(script);
+        })();
+    </script>
+{% endif %}

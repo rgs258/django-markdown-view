@@ -119,6 +119,9 @@ All settings are optional. See `<markdown_view/constants.py>`_ for the defaults.
     * `use_highlight_js`:
         If highlight.js is enabled.
 
+    * `use_mermaid_js`:
+        If mermaid is enabled.
+
     * `use_toc`:
         If the table of contents should be rendered.
 
@@ -139,6 +142,12 @@ All settings are optional. See `<markdown_view/constants.py>`_ for the defaults.
 * `MARKDOWN_VIEW_TEMPLATE_USE_HIGHLIGHT_JS`
 
     Whether to load and activate the highlight.js library in the template.
+
+* `MARKDOWN_VIEW_TEMPLATE_USE_MERMAID_JS`
+
+    Defaults to `True`. Whether to load mermaid and render fenced code blocks
+    tagged ``mermaid`` as diagrams. In the template context, `use_mermaid_js`.
+    Requires the `fenced_code` extension.
 
 * `MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS`
 
