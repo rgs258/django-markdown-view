@@ -140,6 +140,12 @@ All settings are optional. See `<markdown_view/constants.py>`_ for the defaults.
 
     Whether to load and activate the highlight.js library in the template.
 
+* `MARKDOWN_VIEW_TEMPLATE_USE_MERMAID_JS`
+
+    Defaults to `True`. Whether to load mermaid and render fenced code blocks
+    tagged ``mermaid`` as diagrams. In the template context, `use_mermaid_js`.
+    Requires the `fenced_code` extension.
+
 * `MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS`
 
     Defaults to `True`. Markdown source files commonly link to other `.md`
