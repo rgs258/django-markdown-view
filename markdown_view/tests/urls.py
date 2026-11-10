@@ -1,4 +1,6 @@
-"""URL configuration used only by markdown_view's own test suite.
+"""URL configuration used by markdown_view's own test suite, and also
+usable directly via ``python manage.py runserver`` to manually explore
+its test fixtures (starting from the ``index`` route below).
 
 Registers a variety of ``MarkdownView`` (and subclass) routes, plus a few
 routes intentionally shaped to exercise ``registry.py``'s edge cases (no
@@ -8,6 +10,7 @@ callback, and two differently-named routes serving the same source file).
 from django.urls import include, path
 from django.views.generic import TemplateView
 
+from markdown_view.tests.testapp.views import index
 from markdown_view.views import (
     LoggedInMarkdownView,
     MarkdownView,
@@ -35,6 +38,7 @@ level1_patterns = (
 )
 
 urlpatterns = [
+    path("", index, name="index"),
     path(
         "readme/",
         MarkdownView.as_view(file_name="testapp/README.md"),
