@@ -28,10 +28,16 @@
 {% endif %}
 
 {% if use_mermaid_js %}
-    <script type="module">
-        if (document.querySelector("#markdown_view_content pre > code.language-mermaid, #markdown_view_content .mermaid")) {
-            import("https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs").then(function (module) {
-                var mermaid = module.default;
+    <script>
+        (function () {
+            if (!document.querySelector("#markdown_view_content pre > code.language-mermaid, #markdown_view_content .mermaid")) {
+                return;
+            }
+            var script = document.createElement("script");
+            script.src = "https://cdn.jsdelivr.net/npm/mermaid@10.9.3/dist/mermaid.min.js";
+            script.integrity = "sha384-R63zfMfSwJF4xCR11wXii+QUsbiBIdiDzDbtxia72oGWfkT7WHJfmD/I/eeHPJyT";
+            script.crossOrigin = "anonymous";
+            script.onload = function () {
                 document.querySelectorAll("#markdown_view_content pre > code.language-mermaid").forEach(function (code) {
                     var pre = code.parentElement;
                     var div = document.createElement("div");
@@ -40,8 +46,9 @@
                     pre.replaceWith(div);
                 });
                 mermaid.initialize({startOnLoad: false});
-                return mermaid.run({querySelector: "#markdown_view_content .mermaid"});
-            });
-        }
+                mermaid.run({querySelector: "#markdown_view_content .mermaid"});
+            };
+            document.head.appendChild(script);
+        })();
     </script>
 {% endif %}
