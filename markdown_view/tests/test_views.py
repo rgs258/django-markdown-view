@@ -41,9 +41,21 @@ class MarkdownViewRenderingTests(TestCase):
         context = response.context
         self.assertIn("markdown_content", context)
         self.assertEqual(context["use_highlight_js"], True)
+        self.assertEqual(context["use_mermaid_js"], True)
         self.assertEqual(context["use_toc"], True)
         self.assertIn("markdown_toc", context)
         self.assertEqual(context["page_title"], "Test App README")
+
+    def test_mermaid_script_rendered_by_default(self):
+        response = self.client.get(reverse("readme"))
+        self.assertContains(response, "language-mermaid")
+        self.assertContains(response, "mermaid.run(")
+
+    @override_settings(MARKDOWN_VIEW_TEMPLATE_USE_MERMAID_JS=False)
+    def test_mermaid_script_absent_when_disabled(self):
+        response = self.client.get(reverse("readme"))
+        self.assertEqual(response.context["use_mermaid_js"], False)
+        self.assertNotContains(response, "mermaid.run(")
 
     @override_settings(MARKDOWN_VIEW_TEMPLATE_USE_TOC=False)
     def test_toc_context_absent_when_disabled(self):

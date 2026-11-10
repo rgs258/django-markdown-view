@@ -19,6 +19,7 @@ class SettingsTypeValidationTests(SimpleTestCase):
             MARKDOWN_VIEW_TEMPLATE="markdown_view/markdown.html",
             MARKDOWN_VIEW_TEMPLATE_USE_TOC=True,
             MARKDOWN_VIEW_TEMPLATE_USE_HIGHLIGHT_JS=True,
+            MARKDOWN_VIEW_TEMPLATE_USE_MERMAID_JS=True,
             MARKDOWN_VIEW_USE_REQUEST_CONTEXT=False,
             MARKDOWN_VIEW_EXTRA_CONTEXT={},
             MARKDOWN_VIEW_REWRITE_INTERNAL_LINKS=True,

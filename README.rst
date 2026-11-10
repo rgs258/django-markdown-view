@@ -119,6 +119,9 @@ All settings are optional. See `<markdown_view/constants.py>`_ for the defaults.
     * `use_highlight_js`:
         If highlight.js is enabled.
 
+    * `use_mermaid_js`:
+        If mermaid is enabled.
+
     * `use_toc`:
         If the table of contents should be rendered.
 
