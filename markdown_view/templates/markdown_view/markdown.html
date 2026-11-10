@@ -29,15 +29,19 @@
 
 {% if use_mermaid_js %}
     <script type="module">
-        import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
-        document.querySelectorAll("#markdown_view_content pre > code.language-mermaid").forEach(function (code) {
-            var pre = code.parentElement;
-            var div = document.createElement("div");
-            div.className = "mermaid";
-            div.textContent = code.textContent;
-            pre.replaceWith(div);
-        });
-        mermaid.initialize({startOnLoad: false});
-        mermaid.run({querySelector: "#markdown_view_content .mermaid"});
+        if (document.querySelector("#markdown_view_content pre > code.language-mermaid, #markdown_view_content .mermaid")) {
+            import("https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs").then(function (module) {
+                var mermaid = module.default;
+                document.querySelectorAll("#markdown_view_content pre > code.language-mermaid").forEach(function (code) {
+                    var pre = code.parentElement;
+                    var div = document.createElement("div");
+                    div.className = "mermaid";
+                    div.textContent = code.textContent;
+                    pre.replaceWith(div);
+                });
+                mermaid.initialize({startOnLoad: false});
+                return mermaid.run({querySelector: "#markdown_view_content .mermaid"});
+            });
+        }
     </script>
 {% endif %}
