@@ -1,6 +1,9 @@
 Django Markdown View
 ====================
 
+.. image:: https://img.shields.io/pypi/v/django-markdown-view.svg
+    :target: https://pypi.org/project/django-markdown-view/
+
 .. image:: https://github.com/rgs258/django-markdown-view/actions/workflows/test.yml/badge.svg
     :target: https://github.com/rgs258/django-markdown-view/actions/workflows/test.yml
 
