@@ -48,7 +48,7 @@ class MarkdownViewRenderingTests(TestCase):
 
     def test_mermaid_script_rendered_by_default(self):
         response = self.client.get(reverse("readme"))
-        self.assertContains(response, "language-mermaid")
+        self.assertContains(response, '<pre><code class="language-mermaid">')
         self.assertContains(response, "mermaid.run(")
 
     @override_settings(MARKDOWN_VIEW_TEMPLATE_USE_MERMAID_JS=False)
